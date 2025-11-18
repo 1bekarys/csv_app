@@ -16,10 +16,22 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 @st.cache_data(show_spinner=True)
 def load_csv(path) -> pd.DataFrame:
-    """Чтение CSV с кэшированием"""
-    df = pd.read_csv(path, low_memory=False)
-    return df
-
+    encodings_to_try = [
+        "utf-8",
+        "utf-8-sig",
+        "cp1251",
+        "latin1",
+        "iso-8859-1"
+    ]
+    
+    for enc in encodings_to_try:
+        try:
+            return pd.read_csv(path, encoding=enc, low_memory=False)
+        except Exception:
+            pass
+    
+    st.error("Не удалось открыть CSV файл. Неизвестная кодировка.")
+    return None
 
 st.sidebar.header("Загрузка CSV")
 uploaded_file = st.sidebar.file_uploader("Выберите CSV файл", type=["csv"])
